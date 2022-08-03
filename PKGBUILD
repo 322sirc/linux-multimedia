@@ -5,15 +5,15 @@
 _microarchitecture=47
 
 ## Major kernel version
-_major=5.18
+_major=5.19
 ## Minor kernel version
-_minor=14
+_minor=0
 
 ## PKGBUILD ##
 
 pkgbase=linux-multimedia-custom
-#pkgver=${_major}
-pkgver=${_major}.${_minor}
+pkgver=${_major}
+#pkgver=${_major}.${_minor}
 pkgrel=1
 pkgdesc='Linux Multimedia Optimized'
 url="https://www.kernel.org/"
@@ -31,21 +31,33 @@ source=(
   "git+https://github.com/graysky2/kernel_compiler_patch.git"
   "git+https://github.com/Frogging-Family/linux-tkg.git"
   "choose-gcc-optimization.sh"
-  "bottomspeakers-16IAP7.patch"
-  "config"
+  'config'
+  '0001-ALSA-hda-realtek-Add-quirk-for-Lenovo-Yoga9-14IAP7.patch'
+  '0002-ACPICA-Make-address-space-handler-install-and-_REG-e.patch'
+  '0003-ACPI-EC-fix-ECDT-probe-ordering-issues.patch'
+  '0004-Add-IdeaPad-WMI-Fn-Keys-driver.patch'
+  '0005-Add-IdeaPad-Usage-Mode-driver.patch'
+  '0006-Add-IdeaPad-quick_charge-attribute-to-sysfs.patch'
+  '0007-ALSA-hda-realtek-Add-quirk-for-Yoga-devices.patch'
 )
 validpgpkeys=(
   'ABAF11C65A2970B130ABE3C479BE3E4300411886'  # Linus Torvalds
   '647F28654894E3BD457199BE38DBBDC86092693E'  # Greg Kroah-Hartman
   'A2FF3A36AAA56654109064AB19802F8B0D70FC30'  # Jan Alexander Steffens (heftig)
 )
-sha256sums=('e17d46451133d3a3099b09e200839e875100b48403171923ab71b6a9b39856af'
+sha256sums=('ff240c579b9ee1affc318917de07394fc1c3bb49dac25ec1287370c2e15005a8'
             'SKIP'
             'SKIP'
             'SKIP'
             '1ac18cad2578df4a70f9346f7c6fccbb62f042a0ee0594817fdef9f2704904ee'
-            'SKIP'
-            'SKIP')
+            '2194b0e8f2024ab60b3e2f0e796d0f79a1c0feff039ea1bc996de077e98d11cc'
+            'f2ec03ff889d23ad3af512fbe83a856985e4bd45092f9239897d10c49ec16385'
+            '06cad2a429f2a694f55300a5153483f9883ae5cfb8f8223ed2821a944e6ea4a4'
+            '43e0a20d037015742373f19def6f31710dd35a8ee0e121a97c29b2a57080b801'
+            'c6f778d786fbdd3483c66d834321c788b2818828003862d5a2a12f4cbc1694e6'
+            'c9420129ecdbdfaf3b2006923763d1291f9031f26911219910593b33b621e18d'
+            'c5ade2a167b1337e5564e49f9bec135d40b30b2442174598c354d80580a0af4e'
+            '3e00356005c55f34c753bc7c6ee0eeae7ad6ba1675edf141f50e775125400972')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
@@ -72,14 +84,26 @@ prepare() {
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0003-glitched-cfs.patch
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0006-add-acs-overrides_iommu.patch
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0007-v${_major}-fsync1_via_futex_waitv.patch
-  patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0007-v${_major}-winesync.patch
+  #patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0007-v${_major}-winesync.patch
+  patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0010-lru_${_major}.patch
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0012-misc-additions.patch
-  patch -Np1 < ${srcdir}/bottomspeakers-16IAP7.patch
+  patch -Np1 < ${srcdir}/0001-ALSA-hda-realtek-Add-quirk-for-Lenovo-Yoga9-14IAP7.patch
+  patch -Np1 < ${srcdir}/0002-ACPICA-Make-address-space-handler-install-and-_REG-e.patch
+  patch -Np1 < ${srcdir}/0003-ACPI-EC-fix-ECDT-probe-ordering-issues.patch
+  patch -Np1 < ${srcdir}/0004-Add-IdeaPad-WMI-Fn-Keys-driver.patch
+  patch -Np1 < ${srcdir}/0005-Add-IdeaPad-Usage-Mode-driver.patch
+  patch -Np1 < ${srcdir}/0006-Add-IdeaPad-quick_charge-attribute-to-sysfs.patch
+  patch -Np1 < ${srcdir}/0007-ALSA-hda-realtek-Add-quirk-for-Yoga-devices.patch  
 
   msg2 "Apply GCC Optimization Patch..."
   patch -Np1 < ${srcdir}/kernel_compiler_patch/more-uarches-for-kernel-5.17+.patch
 
-  ### Setting config
+  ### Setting config full stock kernel modules
+  #echo "Setting config..."
+  #cp ${srcdir}/linux-tkg/linux-tkg-config/${_major}/config.x86_64 .config
+  #make olddefconfig
+
+ ### Setting config
   echo "Setting config..."
   cp ${srcdir}/config .config
   make olddefconfig
@@ -135,8 +159,7 @@ prepare() {
   scripts/config --disable CONFIG_FUNCTION_TRACER
   scripts/config --disable CONFIG_STACK_TRACER
   
-  ### Use Nconfig to customize compile options
-  #make nconfig
+ 
 
   make -s kernelrelease > version
   echo "Prepared $pkgbase version $(<version)"
@@ -191,10 +214,7 @@ _package-headers() {
   # required when STACK_VALIDATION is enabled
   install -Dt "$builddir/tools/objtool" tools/objtool/objtool
 
-  # required when DEBUG_INFO_BTF_MODULES is enabled
-  if [ -f "$builddir/tools/bpf/resolve_btfids" ]; then install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids ; fi
-
-  msg2 "Installing headers..."
+  echo "Installing headers..."
   cp -t "$builddir" -a include
   cp -t "$builddir/arch/x86" -a arch/x86/include
   install -Dt "$builddir/arch/x86/kernel" -m644 arch/x86/kernel/asm-offsets.s
