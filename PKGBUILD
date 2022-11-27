@@ -5,16 +5,16 @@
 _microarchitecture=47
 
 ## Major kernel version
-_major=5.19
+_major=6.0
 ## Minor kernel version
-_minor=0
+_minor=9
 
 ## PKGBUILD ##
 
-pkgbase=linux-multimedia-custom
-pkgver=${_major}
-#pkgver=${_major}.${_minor}
-pkgrel=1
+pkgbase=linux-multimedia
+#pkgver=${_major}
+pkgver=${_major}.${_minor}
+pkgrel=2
 pkgdesc='Linux Multimedia Optimized'
 url="https://www.kernel.org/"
 arch=(x86_64)
@@ -27,37 +27,46 @@ makedepends=(
 options=('!strip')
 _srcname=linux-${pkgver}
 source=(
-  https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${pkgver}.tar.{xz,sign}
+  https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${pkgver}.tar.{xz,sign}
   "git+https://github.com/graysky2/kernel_compiler_patch.git"
   "git+https://github.com/Frogging-Family/linux-tkg.git"
   "choose-gcc-optimization.sh"
-  'config'
-  '0001-ALSA-hda-realtek-Add-quirk-for-Lenovo-Yoga9-14IAP7.patch'
-  '0002-ACPICA-Make-address-space-handler-install-and-_REG-e.patch'
-  '0003-ACPI-EC-fix-ECDT-probe-ordering-issues.patch'
-  '0004-Add-IdeaPad-WMI-Fn-Keys-driver.patch'
-  '0005-Add-IdeaPad-Usage-Mode-driver.patch'
-  '0006-Add-IdeaPad-quick_charge-attribute-to-sysfs.patch'
-  '0007-ALSA-hda-realtek-Add-quirk-for-Yoga-devices.patch'
+  "config"
+        '0001-PCI-DPC-Quirk-poot-port-PIO-log-size-for-certain-Int.patch'
+        '0002-ACPICA-include-acpi-acpixf.h-Fix-indentation.patch'
+        '0003-ACPICA-Allow-address_space_handler-Install-and-_REG-.patch'
+        '0004-ACPI-EC-Fix-EC-address-space-handler-unregistration.patch'
+        '0005-ACPI-EC-fix-ECDT-probe-ordering-issues.patch'
+        '0006-Add-IdeaPad-WMI-Fn-Keys-driver.patch'
+        '0007-Add-IdeaPad-Usage-Mode-driver.patch'
+        '0008-Add-IdeaPad-quick_charge-attribute-to-sysfs.patch'        
+        '0009-ALSA-hda-realtek-Add-quirk-for-Yoga-devices.patch'
+        '0010-HID-hid-sensor-custom-More-custom-iio-sensors.patch'
+        '0011-IIO-hid-sensor-als-Use-generic-usage.patch'
 )
 validpgpkeys=(
   'ABAF11C65A2970B130ABE3C479BE3E4300411886'  # Linus Torvalds
   '647F28654894E3BD457199BE38DBBDC86092693E'  # Greg Kroah-Hartman
   'A2FF3A36AAA56654109064AB19802F8B0D70FC30'  # Jan Alexander Steffens (heftig)
+  'C7E7849466FE2358343588377258734B41C31549'  # David Runge <dvzrv@archlinux.org>
 )
-sha256sums=('ff240c579b9ee1affc318917de07394fc1c3bb49dac25ec1287370c2e15005a8'
+sha256sums=('6114a208e82739b4a1ab059ace35262be2a83be34cd1ae23cb8a09337db831c7'
             'SKIP'
             'SKIP'
             'SKIP'
             '1ac18cad2578df4a70f9346f7c6fccbb62f042a0ee0594817fdef9f2704904ee'
-            '2194b0e8f2024ab60b3e2f0e796d0f79a1c0feff039ea1bc996de077e98d11cc'
-            'f2ec03ff889d23ad3af512fbe83a856985e4bd45092f9239897d10c49ec16385'
-            '06cad2a429f2a694f55300a5153483f9883ae5cfb8f8223ed2821a944e6ea4a4'
-            '43e0a20d037015742373f19def6f31710dd35a8ee0e121a97c29b2a57080b801'
+            'c62b823685b3507699ca24188bfa4b904ee6444f4f75b2c771a47b1a75253213'
+            'b19a23d37f3c74aa928c5d577f4fb41f115dbe1acdc3f6383ac9a53c15dbcf71'
+            '2d3d2630f70455665508f1fafe9ed4a320b7e35f6c33843934f5823d175d89f7'
+            '0db4eca1b2c5e75de40de2f58aefe337d236b7bb450c111ee4ca7fa460c7ee73'
+            'a7a7aa38aa21d4749994c0d12823638bf83070bcdd11fb470ecd5904c5c183bf'
+            '244678444eb5a297badcfedaac324d1186a8973aea0e8a98128b65eb9ecd644b'
             'c6f778d786fbdd3483c66d834321c788b2818828003862d5a2a12f4cbc1694e6'
             'c9420129ecdbdfaf3b2006923763d1291f9031f26911219910593b33b621e18d'
             'c5ade2a167b1337e5564e49f9bec135d40b30b2442174598c354d80580a0af4e'
-            '3e00356005c55f34c753bc7c6ee0eeae7ad6ba1675edf141f50e775125400972')
+            '4ccf87491541cd991fbb2cf05f87fd08ddb885144f7c3bc04fe16e406327b136'
+            'd1b2c9c17b0c193d3df1184d0f7fc850daf9e3d84d1d34385c8a9ee10a6ae17c'
+            '7ff6d9c2da686f3331c117d2f06f6aa9f37be5ac95eb781b54491e0ece517a8a')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
@@ -80,30 +89,31 @@ prepare() {
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0002-clear-patches.patch
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0002-mm-Support-soft-dirty-flag-read-with-reset.patch
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0003-glitched-base.patch
-  patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0003-glitched-cfs-additions.patch
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0003-glitched-cfs.patch
+  patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0003-glitched-cfs-additions.patch
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0006-add-acs-overrides_iommu.patch
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0007-v${_major}-fsync1_via_futex_waitv.patch
-  #patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0007-v${_major}-winesync.patch
-  patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0010-lru_${_major}.patch
+  patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0007-v${_major}-winesync.patch
+  patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0008-${_major}-bcachefs.patch
+  #patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0010-lru_${_major}.patch
   patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0012-misc-additions.patch
-  patch -Np1 < ${srcdir}/0001-ALSA-hda-realtek-Add-quirk-for-Lenovo-Yoga9-14IAP7.patch
-  patch -Np1 < ${srcdir}/0002-ACPICA-Make-address-space-handler-install-and-_REG-e.patch
-  patch -Np1 < ${srcdir}/0003-ACPI-EC-fix-ECDT-probe-ordering-issues.patch
-  patch -Np1 < ${srcdir}/0004-Add-IdeaPad-WMI-Fn-Keys-driver.patch
-  patch -Np1 < ${srcdir}/0005-Add-IdeaPad-Usage-Mode-driver.patch
-  patch -Np1 < ${srcdir}/0006-Add-IdeaPad-quick_charge-attribute-to-sysfs.patch
-  patch -Np1 < ${srcdir}/0007-ALSA-hda-realtek-Add-quirk-for-Yoga-devices.patch  
+  patch -Np1 < ${srcdir}/linux-tkg/linux-tkg-patches/${_major}/0013-optimize_harder_O3.patch
+  patch -Np1 < ${srcdir}/0001-PCI-DPC-Quirk-poot-port-PIO-log-size-for-certain-Int.patch
+  patch -Np1 < ${srcdir}/0002-ACPICA-include-acpi-acpixf.h-Fix-indentation.patch
+  patch -Np1 < ${srcdir}/0003-ACPICA-Allow-address_space_handler-Install-and-_REG-.patch
+  patch -Np1 < ${srcdir}/0004-ACPI-EC-Fix-EC-address-space-handler-unregistration.patch
+  patch -Np1 < ${srcdir}/0005-ACPI-EC-fix-ECDT-probe-ordering-issues.patch
+  patch -Np1 < ${srcdir}/0006-Add-IdeaPad-WMI-Fn-Keys-driver.patch
+  patch -Np1 < ${srcdir}/0007-Add-IdeaPad-Usage-Mode-driver.patch
+  patch -Np1 < ${srcdir}/0008-Add-IdeaPad-quick_charge-attribute-to-sysfs.patch
+  patch -Np1 < ${srcdir}/0009-ALSA-hda-realtek-Add-quirk-for-Yoga-devices.patch 
+  patch -Np1 < ${srcdir}/0010-HID-hid-sensor-custom-More-custom-iio-sensors.patch
+  patch -Np1 < ${srcdir}/0011-IIO-hid-sensor-als-Use-generic-usage.patch 
 
   msg2 "Apply GCC Optimization Patch..."
   patch -Np1 < ${srcdir}/kernel_compiler_patch/more-uarches-for-kernel-5.17+.patch
 
-  ### Setting config full stock kernel modules
-  #echo "Setting config..."
-  #cp ${srcdir}/linux-tkg/linux-tkg-config/${_major}/config.x86_64 .config
-  #make olddefconfig
-
- ### Setting config
+  ### Setting config
   echo "Setting config..."
   cp ${srcdir}/config .config
   make olddefconfig
@@ -134,32 +144,21 @@ prepare() {
   scripts/config --disable CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE
   scripts/config --enable CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
 
-  msg2 "Enable Anbox support..."
-  scripts/config --module CONFIG_ASHMEM
-  scripts/config --enable CONFIG_ANDROID
-  scripts/config --enable CONFIG_ANDROID_BINDER_IPC
-  scripts/config --enable ANDROID_BINDER_IPC_SELFTEST
-  scripts/config --enable CONFIG_ANDROID_BINDERFS
-  scripts/config --set-str CONFIG_ANDROID_BINDER_DEVICES "binder,hwbinder,vndbinder"
-  scripts/config --enable CONFIG_SW_SYNC
-  scripts/config --module CONFIG_UHID
-
+  
   msg2 "Disable kernel debugging for smaller builds..."
   scripts/config --disable CONFIG_CONTEXT_TRACKING
   scripts/config --disable CONFIG_CONTEXT_TRACKING_FORCE
   scripts/config --disable CONFIG_DEBUG_KERNEL
   scripts/config --disable CONFIG_DEBUG_INFO
-  scripts/config --disable CONFIG_ENABLE_MUST_CHECK
   scripts/config --disable CONFIG_UNUSED_SYMBOLS
   scripts/config --disable CONFIG_DEBUG_FS
-  scripts/config --disable CONFIG_DEBUG_SECTION_MISMATCH
-  scripts/config --disable CONFIG_DEBUG_FORCE_WEAK_PER_CPU
-  scripts/config --disable CONFIG_DEBUG_MEMORY_INIT
   scripts/config --disable CONFIG_KGDB
   scripts/config --disable CONFIG_FUNCTION_TRACER
   scripts/config --disable CONFIG_STACK_TRACER
   
- 
+  
+  ### Use Nconfig to customize compile options
+  #make nconfig
 
   make -s kernelrelease > version
   echo "Prepared $pkgbase version $(<version)"
